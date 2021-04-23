@@ -8,3 +8,18 @@ Secara keseluruhan, hal yang harus dilakukan dalam soal tersebut adalah:
 4. Setelah folder terisi 10 gambar, membuat file ```status.txt``` yang berisi pesan ```Download Success``` yang dienkripsi dengan caesar cipher shift 5
 5. Program dijalankan dengan argumen ```-z``` atau ```-x```, dimana argumen pertama akan mengenerate sebuah bash program yang jika dijalankan akan langsung menterminate program, dan argumen kedua jika dijalankan akan menterminate program ketika semua proses sudah selesai (Direktori yang sudah dibuat akan mendownload gambar sampai selesai dan membuat file txt, lalu zip dan delete direktori)
 ### Penyelesaian
+#### Library
+Berikut adalah library yang digunakan untuk menyelesaikan soal ini:
+
+```#include <sys/types.h>``` = untuk tipe data ```pid_t```
+```#include <sys/stat.h>``` = untuk pengembalian status waktu pada ```time_t```
+```#include <stdio.h>``` = untuk standard input-output
+```#include <stdlib.h>``` = untuk fungsi-fungsi general
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <syslog.h>
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
+#include <wait.h>
