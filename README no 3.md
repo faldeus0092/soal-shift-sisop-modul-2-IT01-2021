@@ -35,3 +35,154 @@ Berikut adalah library yang digunakan untuk menyelesaikan soal ini:
 
 ```#include <wait.h>``` = untuk melakukan fungsi ```wait ()```
 
+#### Fungsi main
+Pada fungsi main, program kami menerima 2 argumen. argumen ini nantinya digunakan untuk menentukan bash program mana yang akan dibuat:
+```
+int main(int argc, char *argv[])
+{
+  // isi fungsi
+}
+````
+
+#### Daemon Process
+Daemon Process adalah sebuah proses yang bekerja pada background karena proses ini tidak memiliki terminal pengontrol. Process ini kami gunakan karena dapat dijalankan di latar belakang secara terus menerus.
+
+Langkah pertama daemon process adalah melakukan ```fork()``` pada parent process lalu membunuhnya agar sistem mengira proses tersebut selesai.
+```
+    pid_t process_id = 0;
+    pid_t sid = 0;
+    // buat child process
+    process_id = fork();
+    // indikasi fork() gagal
+    if (process_id < 0)
+    {
+        printf("fork failed!\n");
+        // Return in exit status
+        exit(1);
+    }
+    // PARENT PROCESS. harus dibunuh.
+    if (process_id > 0)
+    {
+        // return success exit status
+        exit(0);
+    }
+```
+Kemudian mengatur umask agar mendapatkan full akses terhadap file
+``` umask (0);```
+
+Mengatur SID agar child process tidak menjadi orphan 
+```
+    if (sid < 0)
+    {
+        // Return failure
+        exit(1);
+    }
+```
+
+Setelah itu mengubah working directory. Directory berbeda tergantung tiap komputer, jadi sesuaikan sendiri
+```
+chdir("/home/pepega/sisopShift2/soal3/");
+```
+
+Menutup file descriptor standar karena daemon tidak boleh mengakases terminal
+```
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+```
+
+Terakhir, program utama akan berada di while loop
+```
+    while (1)
+    {
+      // program utama
+    }
+```
+
+#### Pembuatan Bash Program
+Pada soal disebutkan untuk membuat bash program sesuai deskripsi sebelumnya. Pertama-tama kami membuat integer untuk menyimpan pid process:
+```
+    int asdf;
+    asdf = getpid();
+```
+
+Kemudian untuk memisahkan fungsi antara argumen ```-z``` dan ```-x```, kami menggunakan if else:
+```
+		if (argc < 2)
+		{
+			printf("missing argument\n");
+			exit(-1);
+		}
+		if (strcmp(argv[1], "-z") == 0)
+		{
+			// argumen -z
+		}
+		else if (strcmp(argv[1], "-x") == 0)
+		{
+			// argumen -x
+		}
+```
+
+Untuk membuat bash program, kedua argumen menggunakan logika yang sama:
+```
+      FILE *killer = NULL;
+			killer = fopen("killer.sh", "w+");
+			// permission ganti dengan chmod
+			chmod("killer.sh", 0777);
+			// nama program sesuaikan dengan nama executable
+			fprintf(killer, "isi bash program di sini");
+			fflush(killer);
+			fclose(killer)
+```
+
+Membuat file killer, mengubahnya menjadi mode w+ (untuk read dan write, serta membuat file jika belum ada), mengubah permission dengan chmod. Perbedaannya adalah isi filenya. Untuk argumen ```-z```:
+
+```
+  #!/bin/bash
+  killall -9 soal3
+  rm \"$0\"
+```
+
+Untuk argumen ```-x```:
+
+```
+  #!/bin/bash
+  kill -9 %d
+  rm \"$0\"
+```
+
+dengan ```%d``` diisi dengan ```int asdf;``` yang berisi PID process.
+
+#### Program Utama
+Program ini berada di while loop seperti yang sudah disebutkan sebelumnya. Pertama, kami membuat integer status agar bisa digunakan dalam fungsi wait:
+```
+int status;
+```
+
+#### Membuat Folder Sesuai Timestamp
+Untuk membuat folder sesuai timestamp, kami menggunakan bantuan fungsi ```strftime()``` [referensi bisa dilihat di sini](http://www.cplusplus.com/reference/ctime/strftime/) untuk menyimpan waktu sekarang ke dalam string. Setelah itu menggunakan bantuan ```fork()``` dan ```exec()``` untuk membuat foldernya:
+
+```
+        int status;
+        int n1 = fork();
+
+        time_t rawtime;
+        struct tm *timeinfo;
+        char stamp[80];
+
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        strftime(stamp, 80, "%F_%T", timeinfo);
+
+        if (n1 == 0)
+        {
+            //Buat folder sesuai waktu sekarang
+            char *argv[] = {"mkdir", "-p", stamp, NULL};
+            execv("/bin/mkdir", argv);
+        }
+        else
+        {
+         // parent process...
+        }
+```
+
