@@ -108,31 +108,31 @@ Pada soal disebutkan untuk membuat bash program sesuai deskripsi sebelumnya. Per
 
 Kemudian untuk memisahkan fungsi antara argumen ```-z``` dan ```-x```, kami menggunakan if else:
 ```
-		if (argc < 2)
-		{
-			printf("missing argument\n");
-			exit(-1);
-		}
-		if (strcmp(argv[1], "-z") == 0)
-		{
-			// argumen -z
-		}
-		else if (strcmp(argv[1], "-x") == 0)
-		{
-			// argumen -x
-		}
+	if (argc < 2)
+	{
+		printf("missing argument\n");
+		exit(-1);
+	}
+	if (strcmp(argv[1], "-z") == 0)
+	{
+		// argumen -z
+	}
+	else if (strcmp(argv[1], "-x") == 0)
+	{
+		// argumen -x
+	}
 ```
 
 Untuk membuat bash program, kedua argumen menggunakan logika yang sama:
 ```
-      FILE *killer = NULL;
-			killer = fopen("killer.sh", "w+");
-			// permission ganti dengan chmod
-			chmod("killer.sh", 0777);
-			// nama program sesuaikan dengan nama executable
-			fprintf(killer, "isi bash program di sini");
-			fflush(killer);
-			fclose(killer)
+      	FILE *killer = NULL;
+	killer = fopen("killer.sh", "w+");
+	// permission ganti dengan chmod
+	chmod("killer.sh", 0777);
+	// nama program sesuaikan dengan nama executable
+	fprintf(killer, "isi bash program di sini");
+	fflush(killer);
+	fclose(killer)
 ```
 
 Membuat file killer, mengubahnya menjadi mode w+ (untuk read dan write, serta membuat file jika belum ada), mengubah permission dengan chmod. Perbedaannya adalah isi filenya. Untuk argumen ```-z```:
@@ -156,11 +156,11 @@ dengan ```%d``` diisi dengan ```int asdf;``` yang berisi PID process.
 #### Program Utama
 Program ini berada di while loop seperti yang sudah disebutkan sebelumnya. Pertama, kami membuat integer status agar bisa digunakan dalam fungsi wait:
 ```
-int status;
+	int status;
 ```
 
 #### Membuat Folder Sesuai Timestamp
-Untuk membuat folder sesuai timestamp, kami menggunakan bantuan fungsi ```strftime()``` [referensi bisa dilihat di sini](http://www.cplusplus.com/reference/ctime/strftime/) untuk menyimpan waktu sekarang ke dalam string. Setelah itu menggunakan bantuan ```fork()``` dan ```exec()``` untuk membuat foldernya:
+Untuk membuat folder sesuai timestamp, kami menggunakan bantuan fungsi ```strftime()``` [referensi bisa dilihat di sini](http://www.cplusplus.com/reference/ctime/strftime/) untuk menyimpan waktu sekarang ke dalam string ```stamp```. Setelah itu menggunakan bantuan ```fork()``` dan ```exec()``` untuk membuat foldernya:
 
 ```
         int status;
@@ -185,4 +185,161 @@ Untuk membuat folder sesuai timestamp, kami menggunakan bantuan fungsi ```strfti
          // parent process...
         }
 ```
+
+#### Mendownload Gambar ke dalam Folder
+Fungsi untuk mendownload gambar terdapat dalam parent process dari program sebelumnya. Kami menggunakan for loop hingga 10 kali untuk mendownloadnya 10 kali
+
+```
+	else
+        {
+		// while ((wait(&status)) > 0);
+		int n8 = fork ();
+		if (n8 == 0) {
+			for (int i=0; i<10; i++){
+				time_t rawtime;
+				struct tm *timeinfo;
+				char img[80];
+				time(&rawtime);
+				timeinfo = localtime(&rawtime);
+				strftime(img, 80, "%F_%T", timeinfo);
+				strcat(img, ".jpg");
+				int n3 = fork();
+
+				//ukuran image
+				unsigned long size = ((unsigned long)time(NULL) % 1000) + 50;
+				//nama image
+				char result[80];
+				snprintf(result, sizeof(result), "%s/%s", stamp, img);
+				//link download
+				char url[80];
+				snprintf(url, sizeof(url), "https://picsum.photos/%ld/%ld/\?random", size, size);
+
+				if (n3 == 0)
+				{
+					//Download gambar
+					// while ((wait(&status)) > 0);
+					execlp("/usr/bin/wget",
+							"wget", url, "-q",
+							"-O", result, NULL);
+				}
+				//delay 5 detik
+				sleep(5);
+			}
+			// ...lanjut
+        }
+```
+
+Untuk mendapatkan nama file, kurang lebih sama seperti nama folder, kami menggunakan fungsi strftime. Kemudian nama image akan disimpan di string ```result```:
+```
+	time_t rawtime;
+	struct tm *timeinfo;
+	char img[80];
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(img, 80, "%F_%T", timeinfo);
+	strcat(img, ".jpg");
+
+	// some program ...
+
+	//nama image
+	char result[80];
+	snprintf(result, sizeof(result), "%s/%s", stamp, img);
+
+	// some program ...
+```
+
+Untuk mendapatkan ukuran file, kami menggunakan fungsi ```time(NULL)``` untuk mendapatkan nilai epoch dalam detik. Kemudian dimod dengan 1000 dan ditambah 50 sesuai perintah ~~baginda asisten~~ soal:
+```
+	//ukuran image
+	unsigned long size = ((unsigned long)time(NULL) % 1000) + 50;
+```
+
+Untuk mendownload file, kami menggabungkan string url dengan ukuran image menggunakan ```snprintf``` kemudian mendownload gambarnya menggunakan ```wget``` dan ```exec```. Kami berikan ```sleep (5)``` agar program delay selama 5 detik
+```
+	// some program ...
+	//link download
+	char url[80];
+	snprintf(url, sizeof(url), "https://picsum.photos/%ld/%ld/\?random", size, size);
+
+	if (n3 == 0)
+	{
+		//Download gambar
+		// while ((wait(&status)) > 0);
+		execlp("/usr/bin/wget",
+				"wget", url, "-q",
+				"-O", result, NULL);
+	}
+	//delay 5 detik
+	sleep(5);
+```
+
+Kemudian, jika folder sudah terisi 10 gambar, kami membuat sebuah file berisi pesan ```Download Success``` yang dienkripsi dalam caesar cipher shift 5. Untuk pembuatan filenya kami menggunakan logika yang sama seperti file bash tadi. Kami menggunakan fungsi eksternal ```caesarEncryption()``` untuk mengenkripsinya:
+```
+	//buat txt file
+	strcpy(data, "Download Success");
+	key = 5;
+	caesarEncryption();
+	char dir[80];
+	snprintf(dir, sizeof(dir), "%s/status.txt", stamp);
+	FILE *msg = NULL;
+	msg = fopen(dir, "w+");
+	fprintf(msg, "%s", data);
+	fflush(msg);
+	fclose(msg);
+```
+
+Adapun fungsi ```caesarEncryption()``` akan menggeser huruf ke kanan sebanyak key (shift) yang diberikan:
+```
+	//untuk caesar cipher
+	char data[50], temp;
+	int key, count;
+
+	void caesarEncryption()
+	{
+	    for (count = 0; data[count] != '\0'; count++)
+	    {
+		temp = data[count];
+		if (temp >= 'a' && temp <= 'z')
+		{
+		    temp = temp + key;
+		    if (temp > 'z')
+		    {
+			temp = temp - 'z' + 'a' - 1;
+		    }
+		    data[count] = temp;
+		}
+		else if (temp >= 'A' && temp <= 'Z')
+		{
+		    temp = temp + key;
+		    if (temp > 'Z')
+		    {
+			temp = temp - 'Z' + 'A' - 1;
+		    }
+		    data[count] = temp;
+		}
+	    }
+	}
+```
+
+Melakukan zip dan delete dengan bantuan system call ```fork``` dan exec. Ketika menjalankan ini, folder akan dizip lalu dihapus sehingga menyisakan file .zip-nya saja. Jangan lupa menambahkan ```while ((wait(&status)) > 0);``` pada parent process agar penghapusan file berjalan setelah kompres .zip selesai.
+```
+	//zip file lalu delete
+	int n4 = fork();
+	if (n4 == 0)
+	{
+		char zip[80];
+		snprintf(zip, sizeof(zip), "%s.zip", stamp);
+		execlp("/usr/bin/zip", "zip", "-rm", zip, stamp, NULL);
+	}
+	else
+	{
+		while ((wait(&status)) > 0);
+		char *deleteAll[] = {"rm", "-rf", stamp, NULL};
+		execv("/bin/rm", deleteAll);
+	}
+```
+
+Terakhir, menambahkan ```sleep (40)``` pada akhir while loop utama agar program dalam while loop berjalan setiap 40 detik.
+
+#### Kendala dan Screenshot
 
