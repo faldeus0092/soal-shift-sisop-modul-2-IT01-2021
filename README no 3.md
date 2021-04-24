@@ -341,5 +341,39 @@ Melakukan zip dan delete dengan bantuan system call ```fork``` dan exec. Ketika 
 
 Terakhir, menambahkan ```sleep (40)``` pada akhir while loop utama agar program dalam while loop berjalan setiap 40 detik.
 
-#### Kendala dan Screenshot
+#### Screenshot
+Menjalankan dengan argumen ```-z```
+![image](https://user-images.githubusercontent.com/73151823/115948018-ca207680-a4f5-11eb-849a-049bd9abb542.png)
+
+Menjalankan ```killer.sh```
+![image](https://user-images.githubusercontent.com/73151823/115948042-e7554500-a4f5-11eb-99fa-7e430feda4ee.png)
+
+Menjalankan dengan argumen ```-x```
+![image](https://user-images.githubusercontent.com/73151823/115948158-93972b80-a4f6-11eb-811d-203694426a4d.png)
+
+Menjalankan ```killer.sh```
+![image](https://user-images.githubusercontent.com/73151823/115948164-a3af0b00-a4f6-11eb-83fd-72e3b883af37.png)
+
+#### Kendala
+Kendala kami adalah ketika membuat program berhenti dengan argumen ```-x```, kami tidak tahu bahwa ternyata harus menggunakan kill dengan PID baru bisa. 
+```
+int asdf;
+asdf = getpid();
+snprintf(kille, sizeof(kille), "#!/bin/bash\n\nkill -9 %d\nrm \"$0\"", asdf);
+```
+
+Selain itu, untuk memasukkan link ke dalam argumen exec. Ternyata lebih mudah jika menyimpan link tersebut ke dalam string terlebih dahulu
+```
+	char url[80];
+	snprintf(url, sizeof(url), "https://picsum.photos/%ld/%ld/\?random", size, size);
+
+	if (n3 == 0)
+	{
+		//Download gambar
+		// while ((wait(&status)) > 0);
+		execlp("/usr/bin/wget",
+				"wget", url, "-q",
+				"-O", result, NULL);
+	}
+```
 
