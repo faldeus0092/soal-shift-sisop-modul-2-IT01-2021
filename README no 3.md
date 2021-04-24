@@ -12,14 +12,26 @@ Secara keseluruhan, hal yang harus dilakukan dalam soal tersebut adalah:
 Berikut adalah library yang digunakan untuk menyelesaikan soal ini:
 
 ```#include <sys/types.h>``` = untuk tipe data ```pid_t```
+
 ```#include <sys/stat.h>``` = untuk pengembalian status waktu pada ```time_t```
+
 ```#include <stdio.h>``` = untuk standard input-output
+
 ```#include <stdlib.h>``` = untuk fungsi-fungsi general
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
-#include <syslog.h>
-#include <string.h>
-#include <time.h>
-#include <sys/time.h>
-#include <wait.h>
+
+```#include <fcntl.h>``` = untuk file lock dari ```pid_t```
+
+```#include <errno.h>``` = untuk mendefinisikan integer errno, yang diset oleh system call untuk mengindikasikan error
+
+```#include <unistd.h>``` = untuk melakukan system call ```fork()```
+
+```#include <syslog.h>``` = untuk melakukan system log
+
+```#include <string.h>``` = untuk melakukan manipulasi string, misalnya ```strcmp()```
+
+```#include <time.h>``` = untuk mendefinisikan variabel time_t, struct tm, time, localtime, strftime yang bisa manipulasi waktu
+
+```#include <sys/time.h>``` = untuk mendefinisikan timeval structure (tidak dipakai)
+
+```#include <wait.h>``` = untuk melakukan fungsi ```wait ()```
+
